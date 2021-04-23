@@ -1,2 +1,2 @@
 # Project-Pixel
-Project for  PoW and workchains.
+Project for  _proof of work_ and workchains.
