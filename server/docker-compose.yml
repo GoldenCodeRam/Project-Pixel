@@ -1,11 +1,8 @@
 version: "3.9"
 services:
   server:
-    build: ./server/.
+    build: ./server/
     links:
-      - client
       - redis
-  client:
-    build: ./client/.
   redis:
     image: redis
