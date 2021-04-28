@@ -1,4 +1,4 @@
-//import redis from 'redis'
+// import redis from 'redis'
 
 // export default class Database {
 //   private _redisDatabase: redis.RedisClient
