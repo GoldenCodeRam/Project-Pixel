@@ -8,7 +8,11 @@ export default class Canvas {
 
   private _mousePosition = { x: 0, y: 0 };
 
-  constructor(canvas: HTMLCanvasElement, cursorPosition: HTMLParagraphElement) {
+  public _publicMousePosition;
+  public _pixelColor;
+  public _pixelObj = { pixelX: 0, pixelY: 0, color: '' };
+
+  constructor(canvas: HTMLCanvasElement, cursorPosition: HTMLParagraphElement, color) {
     this._canvas = canvas;
     this._mousePositionText = cursorPosition;
     this._context = canvas.getContext("2d");
@@ -17,8 +21,10 @@ export default class Canvas {
     );
 
     canvas.addEventListener("click", (event) => {
+      color = this._pixelColor;
       this.mouseMovedInCanvas(event);
-      this.draw(this._mousePosition.x, this._mousePosition.y);
+      this.draw(this._mousePosition.x, this._mousePosition.y, color);
+      this._publicMousePosition = { x: this._mousePosition.x, y: this._mousePosition.y }
     });
 
     canvas.addEventListener('mousemove', (event) => {
@@ -27,12 +33,16 @@ export default class Canvas {
     });
 
     this.loadImage();
+
   }
 
-  public save(onBlobLoad: Function) {
-    this._canvas.toBlob((blob) => {
-      onBlobLoad(blob);
-    });
+  // Create the object with position x, y and color.
+  public savePixel(color) {
+    return this._pixelObj = {
+      pixelX: this._publicMousePosition.x,
+      pixelY: this._publicMousePosition.y,
+      color: color,
+    }    
   }
 
   private loadImage() {
@@ -53,7 +63,8 @@ export default class Canvas {
     };
   }
 
-  private draw(x: number, y: number) {
+  private draw(x: number, y: number, color) {
+    this.setColor(color);
     if (x >= 0 && x < this._canvas.width && y >= 0 && y < this._canvas.height) {
       this._context.fillRect(
         x * BRUSH_SIZE,
@@ -61,11 +72,13 @@ export default class Canvas {
         BRUSH_SIZE,
         BRUSH_SIZE
       );
+
     }
   }
 
   private setColor(color) {
-    this._context.fillStyle = `rgba("${color[0]},${color[1]},${color[2]},${color[3]}")`;
+    // this._context.fillStyle = `rgba("${color[0]},${color[1]},${color[2]},${color[3]}")`;
+    this._context.fillStyle = color;
   }
 
   private mouseMovedInCanvas(event: MouseEvent) {
