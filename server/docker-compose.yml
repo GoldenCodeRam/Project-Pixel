@@ -1,8 +1,15 @@
 version: "3.9"
 services:
   server:
-    build: ./server/
+    build: .
     links:
       - redis
+    ports:
+      - "${PORT}:8080"
   redis:
     image: redis
+
+networks:
+  default:
+    external:
+      name: project_pixel

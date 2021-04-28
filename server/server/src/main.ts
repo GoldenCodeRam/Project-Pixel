@@ -1,5 +1,5 @@
 import axios from 'axios'
-import express, { json } from 'express'
+import express from 'express'
 // import Database from './database'
 
 import { logger } from './utils/Logger'
@@ -21,8 +21,6 @@ let word = '';
 app.use(fileUpload())
 // parse application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: false }))
-
-// parse application/json
 app.use(express.json())
 
 const words:string[] = ['Mandarina','Pera','Limon']
@@ -30,7 +28,15 @@ const servers:number[] = [8080,8081,8082,8083]
 
 console.clear()
 
+app.use(express.static('public'))
+
+app.post('/image', (request, response) => {
+  logger.info('Post request to upload the pixelart image')
+  response.sendStatus(200)
+})
+
 app.get('/status', (_, response) => {
+  logger.info('Request to send the status of the server; OK')
   response.sendStatus(200)
 })
 
@@ -42,9 +48,9 @@ app.post('/verifySignature',(req,res) => {
   res.json({message:true})
 })
 
-//Peticion que devuelve una palabra aleatoria del arreglo de palabras predefinidas
-app.get('/word', (req,res) => {
-  let selectedWord = words[Math.floor((Math.random() * (5 - 0)) + 0)];
+// Peticion que devuelve una palabra aleatoria del arreglo de palabras predefinidas
+app.get('/word', (req, res) => {
+  const selectedWord = words[Math.floor((Math.random() * (5 - 0)) + 0)]
   logger.info(`La palabra escogida es ${selectedWord}`)
   res.json({word:selectedWord})
 })
@@ -54,9 +60,9 @@ app.post('/changePixel',(req,res)=>{
   let img = (req as any).files.file;
   let info = req.body.info;
 
-  info = JSON.parse(info);
+  info = JSON.parse(info)
   logger.info('Informacion de firmas recibida correctamente')
-  img.mv(`${img.name}`,() =>{
+  img.mv(`${img.name}`, () => {
     logger.info('Imagen recibida correctamente')
   })
   sendSignature(info)

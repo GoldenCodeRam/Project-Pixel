@@ -1,3 +1,12 @@
-# echo 'test' > .env
+# Build server files
+cd server/
+npm run build
+cd ..
 
-docker-compose run -p 5000:8080 -p 5001:8081 server client
+# Make the .env temporal file containing the environment variables for the docker-compose
+echo PORT=$1 > $1.env
+
+docker-compose --project-name $1 --env-file ./$1.env up --detach --force-recreate
+
+# Remove the .env temporal file
+rm $1.env

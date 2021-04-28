@@ -55,12 +55,17 @@ var word = '';
 app.use(fileUpload());
 // parse application/x-www-form-urlencoded
 app.use(express_1.default.urlencoded({ extended: false }));
-// parse application/json
 app.use(express_1.default.json());
 var words = ['Mandarina', 'Pera', 'Limon'];
 var servers = [8080, 8081, 8082, 8083];
 console.clear();
+app.use(express_1.default.static('public'));
+app.post('/image', function (request, response) {
+    Logger_1.logger.info('Post request to upload the pixelart image');
+    response.sendStatus(200);
+});
 app.get('/status', function (_, response) {
+    Logger_1.logger.info('Request to send the status of the server; OK');
     response.sendStatus(200);
 });
 //Peticion que verifica si un archivo de firmas coincide con el del servido actual y retorna Ok o Todo mal
@@ -70,7 +75,7 @@ app.post('/verifySignature', function (req, res) {
     //Verificar que coincidan las firmas de la imagen
     res.json({ message: true });
 });
-//Peticion que devuelve una palabra aleatoria del arreglo de palabras predefinidas
+// Peticion que devuelve una palabra aleatoria del arreglo de palabras predefinidas
 app.get('/word', function (req, res) {
     var selectedWord = words[Math.floor((Math.random() * (5 - 0)) + 0)];
     Logger_1.logger.info("La palabra escogida es " + selectedWord);
