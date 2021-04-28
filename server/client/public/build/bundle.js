@@ -46,6 +46,10 @@ var app = (function () {
     function space() {
         return text(' ');
     }
+    function listen(node, event, handler, options) {
+        node.addEventListener(event, handler, options);
+        return () => node.removeEventListener(event, handler, options);
+    }
     function attr(node, attribute, value) {
         if (value == null)
             node.removeAttribute(attribute);
@@ -138,11 +142,31 @@ var app = (function () {
         }
     }
     const outroing = new Set();
+    let outros;
     function transition_in(block, local) {
         if (block && block.i) {
             outroing.delete(block);
             block.i(local);
         }
+    }
+    function transition_out(block, local, detach, callback) {
+        if (block && block.o) {
+            if (outroing.has(block))
+                return;
+            outroing.add(block);
+            outros.c.push(() => {
+                outroing.delete(block);
+                if (callback) {
+                    if (detach)
+                        block.d(1);
+                    callback();
+                }
+            });
+            block.o(local);
+        }
+    }
+    function create_component(block) {
+        block && block.c();
     }
     function mount_component(component, target, anchor, customElement) {
         const { fragment, on_mount, on_destroy, after_update } = component.$$;
@@ -283,19 +307,25 @@ var app = (function () {
         dispatch_dev('SvelteDOMRemove', { node });
         detach(node);
     }
+    function listen_dev(node, event, handler, options, has_prevent_default, has_stop_propagation) {
+        const modifiers = options === true ? ['capture'] : options ? Array.from(Object.keys(options)) : [];
+        if (has_prevent_default)
+            modifiers.push('preventDefault');
+        if (has_stop_propagation)
+            modifiers.push('stopPropagation');
+        dispatch_dev('SvelteDOMAddEventListener', { node, event, handler, modifiers });
+        const dispose = listen(node, event, handler, options);
+        return () => {
+            dispatch_dev('SvelteDOMRemoveEventListener', { node, event, handler, modifiers });
+            dispose();
+        };
+    }
     function attr_dev(node, attribute, value) {
         attr(node, attribute, value);
         if (value == null)
             dispatch_dev('SvelteDOMRemoveAttribute', { node, attribute });
         else
             dispatch_dev('SvelteDOMSetAttribute', { node, attribute, value });
-    }
-    function set_data_dev(text, data) {
-        data = '' + data;
-        if (text.wholeText === data)
-            return;
-        dispatch_dev('SvelteDOMSetData', { node: text, data });
-        text.data = data;
     }
     function validate_slots(name, slot, keys) {
         for (const slot_key of Object.keys(slot)) {
@@ -326,18 +356,28 @@ var app = (function () {
 
     const BRUSH_SIZE = 10;
     class Canvas {
-        constructor(canvas) {
+        constructor(canvas, cursorPosition) {
+            this._mousePosition = { x: 0, y: 0 };
             this._canvas = canvas;
+            this._mousePositionText = cursorPosition;
             this._context = canvas.getContext("2d");
             this._data = [...Array(canvas.width)].map((value) => Array(canvas.height).fill([255, 255, 255, 255]));
             canvas.addEventListener("click", (event) => {
-                const bounds = this._canvas.getBoundingClientRect();
-                let x = event.clientX - bounds.left;
-                let y = event.clientY - bounds.top;
-                x = Math.floor((this._canvas.width * x) / this._canvas.clientWidth);
-                y = Math.floor((this._canvas.height * y) / this._canvas.clientHeight);
-                this.draw(x, y);
+                this.mouseMovedInCanvas(event);
+                this.draw(this._mousePosition.x, this._mousePosition.y);
             });
+            canvas.addEventListener('mousemove', (event) => {
+                this.mouseMovedInCanvas(event);
+                this._mousePositionText.textContent = `x: ${this._mousePosition.x}, y: ${this._mousePosition.y}`;
+            });
+            this.loadImage();
+        }
+        save(onBlobLoad) {
+            this._canvas.toBlob((blob) => {
+                onBlobLoad(blob);
+            });
+        }
+        loadImage() {
             const image = new Image();
             image.src = "/images/cat2.png";
             const _this = this;
@@ -346,22 +386,199 @@ var app = (function () {
                 _this._context.canvas.height = image.height;
                 _this._context.drawImage(image, 0, 0, image.width, image.height);
             };
-            this._canvas.toBlob((blob) => {
-                URL.createObjectURL(blob);
-            });
         }
         draw(x, y) {
             if (x >= 0 && x < this._canvas.width && y >= 0 && y < this._canvas.height) {
-                const xPosition = Math.floor(x / BRUSH_SIZE);
-                const yPosition = Math.floor(y / BRUSH_SIZE);
-                this._context.fillRect(xPosition * BRUSH_SIZE, yPosition * BRUSH_SIZE, BRUSH_SIZE, BRUSH_SIZE);
+                this._context.fillRect(x * BRUSH_SIZE, y * BRUSH_SIZE, BRUSH_SIZE, BRUSH_SIZE);
             }
         }
         setColor(color) {
             this._context.fillStyle = `rgba("${color[0]},${color[1]},${color[2]},${color[3]}")`;
         }
-        save() {
+        mouseMovedInCanvas(event) {
+            const bounds = this._canvas.getBoundingClientRect();
+            let x = event.clientX - bounds.left;
+            let y = event.clientY - bounds.top;
+            x = Math.floor((this._canvas.width * x) / this._canvas.clientWidth);
+            y = Math.floor((this._canvas.height * y) / this._canvas.clientHeight);
+            const xPosition = Math.floor(x / BRUSH_SIZE);
+            const yPosition = Math.floor(y / BRUSH_SIZE);
+            this._mousePosition = { x: xPosition, y: yPosition };
         }
+    }
+
+    const SERVER_URL = 'http://localhost:8080';
+    class Network {
+        serverStatus() {
+            const request = new XMLHttpRequest();
+            request.open('get', `${SERVER_URL}/status`);
+            request.send();
+        }
+        sendImage(blob) {
+            const request = new XMLHttpRequest();
+            const formData = new FormData();
+            formData.append('image', blob);
+            request.open('post', `${SERVER_URL}/image`);
+            request.send(formData);
+        }
+    }
+
+    /* src/components/Canvas.svelte generated by Svelte v3.37.0 */
+    const file$1 = "src/components/Canvas.svelte";
+
+    function create_fragment$1(ctx) {
+    	let main;
+    	let div;
+    	let p;
+    	let t1;
+    	let canvas_1;
+    	let t2;
+    	let button;
+    	let mounted;
+    	let dispose;
+
+    	const block = {
+    		c: function create() {
+    			main = element("main");
+    			div = element("div");
+    			p = element("p");
+    			p.textContent = "0, 0";
+    			t1 = space();
+    			canvas_1 = element("canvas");
+    			t2 = space();
+    			button = element("button");
+    			button.textContent = "Save image";
+    			attr_dev(p, "class", "svelte-18ix45d");
+    			add_location(p, file$1, 21, 4, 476);
+    			attr_dev(canvas_1, "width", "300px");
+    			attr_dev(canvas_1, "height", "300px");
+    			attr_dev(canvas_1, "class", "svelte-18ix45d");
+    			add_location(canvas_1, file$1, 22, 4, 519);
+    			attr_dev(button, "class", "svelte-18ix45d");
+    			add_location(button, file$1, 23, 4, 582);
+    			attr_dev(div, "class", "svelte-18ix45d");
+    			add_location(div, file$1, 20, 2, 466);
+    			attr_dev(main, "id", "test");
+    			add_location(main, file$1, 19, 0, 447);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, main, anchor);
+    			append_dev(main, div);
+    			append_dev(div, p);
+    			/*p_binding*/ ctx[3](p);
+    			append_dev(div, t1);
+    			append_dev(div, canvas_1);
+    			/*canvas_1_binding*/ ctx[4](canvas_1);
+    			append_dev(div, t2);
+    			append_dev(div, button);
+
+    			if (!mounted) {
+    				dispose = listen_dev(button, "click", /*saveImage*/ ctx[2], false, false, false);
+    				mounted = true;
+    			}
+    		},
+    		p: noop,
+    		i: noop,
+    		o: noop,
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(main);
+    			/*p_binding*/ ctx[3](null);
+    			/*canvas_1_binding*/ ctx[4](null);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$1.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$1($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("Canvas", slots, []);
+    	let canvas;
+    	let cursorPosition;
+    	let canvasWrapper;
+    	const network = new Network();
+
+    	onMount(() => {
+    		canvasWrapper = new Canvas(canvas, cursorPosition);
+    	});
+
+    	function saveImage() {
+    		if (canvasWrapper) {
+    			canvasWrapper.save(blob => {
+    				network.sendImage(blob);
+    			});
+    		}
+    	}
+
+    	const writable_props = [];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Canvas> was created with unknown prop '${key}'`);
+    	});
+
+    	function p_binding($$value) {
+    		binding_callbacks[$$value ? "unshift" : "push"](() => {
+    			cursorPosition = $$value;
+    			$$invalidate(1, cursorPosition);
+    		});
+    	}
+
+    	function canvas_1_binding($$value) {
+    		binding_callbacks[$$value ? "unshift" : "push"](() => {
+    			canvas = $$value;
+    			$$invalidate(0, canvas);
+    		});
+    	}
+
+    	$$self.$capture_state = () => ({
+    		onMount,
+    		Canvas,
+    		Network,
+    		canvas,
+    		cursorPosition,
+    		canvasWrapper,
+    		network,
+    		saveImage
+    	});
+
+    	$$self.$inject_state = $$props => {
+    		if ("canvas" in $$props) $$invalidate(0, canvas = $$props.canvas);
+    		if ("cursorPosition" in $$props) $$invalidate(1, cursorPosition = $$props.cursorPosition);
+    		if ("canvasWrapper" in $$props) canvasWrapper = $$props.canvasWrapper;
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	return [canvas, cursorPosition, saveImage, p_binding, canvas_1_binding];
+    }
+
+    class Canvas_1 extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, {});
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "Canvas_1",
+    			options,
+    			id: create_fragment$1.name
+    		});
+    	}
     }
 
     /* src/App.svelte generated by Svelte v3.37.0 */
@@ -370,44 +587,22 @@ var app = (function () {
     function create_fragment(ctx) {
     	let main;
     	let h1;
-    	let t0;
     	let t1;
-    	let t2;
-    	let t3;
-    	let p;
-    	let t4;
-    	let a;
-    	let t6;
-    	let t7;
-    	let canvas_1;
+    	let canvas;
+    	let current;
+    	canvas = new Canvas_1({ $$inline: true });
 
     	const block = {
     		c: function create() {
     			main = element("main");
     			h1 = element("h1");
-    			t0 = text("Hellos ");
-    			t1 = text(/*name*/ ctx[0]);
-    			t2 = text("!");
-    			t3 = space();
-    			p = element("p");
-    			t4 = text("Visit the ");
-    			a = element("a");
-    			a.textContent = "Svelte tutorial";
-    			t6 = text(" to learn\n    how to build Svelte apps.");
-    			t7 = space();
-    			canvas_1 = element("canvas");
-    			attr_dev(h1, "class", "svelte-12ipkna");
-    			add_location(h1, file, 10, 2, 197);
-    			attr_dev(a, "href", "https://svelte.dev/tutorial");
-    			add_location(a, file, 12, 14, 241);
-    			add_location(p, file, 11, 2, 223);
-    			attr_dev(canvas_1, "width", "300px");
-    			attr_dev(canvas_1, "height", "300px");
-    			attr_dev(canvas_1, "class", "svelte-12ipkna");
-    			add_location(canvas_1, file, 15, 2, 347);
+    			h1.textContent = "Project Pixel";
+    			t1 = space();
+    			create_component(canvas.$$.fragment);
+    			attr_dev(h1, "class", "svelte-sq2aix");
+    			add_location(h1, file, 4, 2, 97);
     			attr_dev(main, "id", "test");
-    			attr_dev(main, "class", "svelte-12ipkna");
-    			add_location(main, file, 9, 0, 178);
+    			add_location(main, file, 3, 0, 78);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -415,26 +610,23 @@ var app = (function () {
     		m: function mount(target, anchor) {
     			insert_dev(target, main, anchor);
     			append_dev(main, h1);
-    			append_dev(h1, t0);
-    			append_dev(h1, t1);
-    			append_dev(h1, t2);
-    			append_dev(main, t3);
-    			append_dev(main, p);
-    			append_dev(p, t4);
-    			append_dev(p, a);
-    			append_dev(p, t6);
-    			append_dev(main, t7);
-    			append_dev(main, canvas_1);
-    			/*canvas_1_binding*/ ctx[2](canvas_1);
+    			append_dev(main, t1);
+    			mount_component(canvas, main, null);
+    			current = true;
     		},
-    		p: function update(ctx, [dirty]) {
-    			if (dirty & /*name*/ 1) set_data_dev(t1, /*name*/ ctx[0]);
+    		p: noop,
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(canvas.$$.fragment, local);
+    			current = true;
     		},
-    		i: noop,
-    		o: noop,
+    		o: function outro(local) {
+    			transition_out(canvas.$$.fragment, local);
+    			current = false;
+    		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(main);
-    			/*canvas_1_binding*/ ctx[2](null);
+    			destroy_component(canvas);
     		}
     	};
 
@@ -452,48 +644,20 @@ var app = (function () {
     function instance($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("App", slots, []);
-    	let { name } = $$props;
-    	let canvas;
-
-    	onMount(() => {
-    		new Canvas(canvas);
-    	});
-
-    	const writable_props = ["name"];
+    	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<App> was created with unknown prop '${key}'`);
     	});
 
-    	function canvas_1_binding($$value) {
-    		binding_callbacks[$$value ? "unshift" : "push"](() => {
-    			canvas = $$value;
-    			$$invalidate(1, canvas);
-    		});
-    	}
-
-    	$$self.$$set = $$props => {
-    		if ("name" in $$props) $$invalidate(0, name = $$props.name);
-    	};
-
-    	$$self.$capture_state = () => ({ onMount, Canvas, name, canvas });
-
-    	$$self.$inject_state = $$props => {
-    		if ("name" in $$props) $$invalidate(0, name = $$props.name);
-    		if ("canvas" in $$props) $$invalidate(1, canvas = $$props.canvas);
-    	};
-
-    	if ($$props && "$$inject" in $$props) {
-    		$$self.$inject_state($$props.$$inject);
-    	}
-
-    	return [name, canvas, canvas_1_binding];
+    	$$self.$capture_state = () => ({ Canvas: Canvas_1 });
+    	return [];
     }
 
     class App extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment, safe_not_equal, { name: 0 });
+    		init(this, options, instance, create_fragment, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -501,29 +665,11 @@ var app = (function () {
     			options,
     			id: create_fragment.name
     		});
-
-    		const { ctx } = this.$$;
-    		const props = options.props || {};
-
-    		if (/*name*/ ctx[0] === undefined && !("name" in props)) {
-    			console.warn("<App> was created without expected prop 'name'");
-    		}
-    	}
-
-    	get name() {
-    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set name(value) {
-    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
 
     const app = new App({
         target: document.body,
-        props: {
-            name: 'world'
-        }
     });
 
     return app;
