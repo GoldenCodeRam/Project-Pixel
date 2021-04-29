@@ -1,18 +1,20 @@
 const SERVER_URL = 'http://localhost:8080';
 
 export default class Network {
+  
   public serverStatus() {
     const request = new XMLHttpRequest();
     request.open('get', `${SERVER_URL}/status`);
     request.send();
-  }
+  }  
 
-  public sendImage(blob: Blob) {
+  public sendPixel(pixelObj: Object) {    
     const request = new XMLHttpRequest();
-    const formData = new FormData();
-    
-    formData.append('image', blob);
-    request.open('post', `${SERVER_URL}/image`);
-    request.send(formData);
+    request.open('post', `${SERVER_URL}/sendNewPixel`);
+    console.log(pixelObj, 'net')
+    console.log(JSON.stringify(pixelObj))
+    request.setRequestHeader("Content-type", "application/json");
+    request.send(JSON.stringify(pixelObj)); 
+  
   }
 }
