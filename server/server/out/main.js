@@ -39,9 +39,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var cors_1 = __importDefault(require("cors"));
 var axios_1 = __importDefault(require("axios"));
 var express_1 = __importDefault(require("express"));
-var cors_1 = __importDefault(require("cors"));
 var Logger_1 = require("./utils/Logger");
 var app = express_1.default();
 var port = 8080;
@@ -49,41 +49,82 @@ var fileUpload = require('express-fileupload');
 app.use(fileUpload());
 // parse application/x-www-form-urlencoded
 app.use(express_1.default.urlencoded({ extended: false }));
-// parse application/json
 app.use(express_1.default.json());
 var words = ['Mandarina', 'Banano', 'Pera', 'Manzana', 'Limon'];
 var servers = [8081, 8082, 8083];
 console.clear();
 app.use(express_1.default.static('public'));
 app.use(cors_1.default());
-app.post('/image', function (request, response) {
+app.post('/sendNewPixel', function (request, response) {
     Logger_1.logger.info('Post request to upload the pixelart image');
-    response.sendStatus(200);
+    Logger_1.logger.info('Recibida info del pixel 👨‍🎨');
+    console.log(request.body);
 });
 app.get('/status', function (_, response) {
     Logger_1.logger.info('Request to send the status of the server; OK');
     response.sendStatus(200);
 });
-app.get('/word', function (req, res) {
-    res.send(words[Math.floor((Math.random() * (5 - 0)) + 0)]);
+// Peticion que verifica si un archivo de firmas coincide con el del servido actual y retorna Ok o Todo mal
+app.post('verifySignature', function (req, res) {
+    // const signature = req.body.signature
+    // Verificar que coincidan las firmas de la imagen
+    res.json({ message: true });
 });
+// Peticion que devuelve una palabra aleatoria del arreglo de palabras predefinidas
+app.get('/word', function (req, res) {
+    var selectedWord = words[Math.floor((Math.random() * (5 - 0)) + 0)];
+    Logger_1.logger.info("La palabra escogida es " + selectedWord);
+    res.send(selectedWord);
+});
+// Peticion inicial a la que accede el cliente para solicitar cambiar un pixel
 app.post('/changePixel', function (req, res) {
     var img = req.files.file;
     var info = req.body.info;
-    console.log(info);
     info = JSON.parse(info);
-    console.log(info);
-    console.log(info[0]);
-    console.log(info[1]);
+    Logger_1.logger.info('Informacion de firmas recibida correctamente');
     img.mv("" + img.name, function () {
+        Logger_1.logger.info('Imagen recibida correctamente');
         res.json('Informacion recibida');
     });
+    sendSignature(info);
 });
+// Funcion que se encarga de enviar la firma a todos los servidores para su verificacion
+function sendSignature(signature) {
+    var cont = 0;
+    servers.forEach(function () {
+        axios_1.default.post("http://localhost:" + servers + "/verifySignature", {
+            data: signature
+        }).then(function (response) {
+            if (response.data.message) {
+                cont = cont + 1;
+            }
+        })
+            .catch(function (error) {
+            console.log(error);
+        });
+    });
+    if (cont >= ((servers.length / 2) + 1)) {
+        // Como las firmas son reales, se procede a solicitar la prueba de trabajo
+        Logger_1.logger.info('La firma de la imagen del cliente es correcta, asignando prueba de trabajo...');
+        pow();
+    }
+    else {
+        // Pailas
+        Logger_1.logger.info('La firma de la imagen del cliente no coincide con la mayoria de los servidores');
+    }
+}
+// Funcion que se encarga de pedir a todos una palabra para asignar la prueba de trabajo al cliente que solicite modificar el archivo
 function pow() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             servers.forEach(function () {
-                axios_1.default.post("http://localhost:" + servers + "/word");
+                axios_1.default.post("http://localhost:" + servers + "/word")
+                    .then(function (response) {
+                    console.log(response);
+                })
+                    .catch(function (error) {
+                    console.log(error);
+                });
             });
             return [2 /*return*/];
         });

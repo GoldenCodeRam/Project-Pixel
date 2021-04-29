@@ -21,9 +21,10 @@ console.clear()
 app.use(express.static('public'))
 app.use(cors())
 
-app.post('/image', (request, response) => {
+app.post('/sendNewPixel', (request, response) => {
   logger.info('Post request to upload the pixelart image')
-  response.sendStatus(200)
+  logger.info('Recibida info del pixel 👨‍🎨')
+  console.log(request.body)
 })
 
 app.get('/status', (_, response) => {
@@ -60,7 +61,7 @@ app.post('/changePixel', (req, res) => {
 })
 
 // Funcion que se encarga de enviar la firma a todos los servidores para su verificacion
-function sendSignature (signature: string) {
+function sendSignature(signature: string) {
   let cont = 0
   servers.forEach(() => {
     axios.post(`http://localhost:${servers}/verifySignature`, {
@@ -85,7 +86,7 @@ function sendSignature (signature: string) {
 }
 
 // Funcion que se encarga de pedir a todos una palabra para asignar la prueba de trabajo al cliente que solicite modificar el archivo
-async function pow () {
+async function pow() {
   servers.forEach(() => {
     axios.post(`http://localhost:${servers}/word`)
       .then(function (response) {
