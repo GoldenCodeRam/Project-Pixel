@@ -10,11 +10,8 @@ export default class Network {
 
   public sendPixel(pixelObj: Object) {    
     const request = new XMLHttpRequest();
-    request.open('post', `${SERVER_URL}/sendNewPixel`);
-    console.log(pixelObj, 'net')
-    console.log(JSON.stringify(pixelObj))
+    request.open('post', `${SERVER_URL}/sendNewPixel`);  
     request.setRequestHeader("Content-type", "application/json");
-    request.send(JSON.stringify(pixelObj)); 
-  
+    request.send(JSON.stringify(pixelObj));
   }
 }

@@ -10,7 +10,7 @@ export default class Canvas {
 
   public _publicMousePosition;
   public _pixelColor;
-  public _pixelObj = { pixelX: 0, pixelY: 0, color: '' };
+  public _pixelObj = { pixelX: 0, pixelY: 0, pixelColor: '' };
 
   constructor(canvas: HTMLCanvasElement, cursorPosition: HTMLParagraphElement, color) {
     this._canvas = canvas;
@@ -41,7 +41,7 @@ export default class Canvas {
     return this._pixelObj = {
       pixelX: this._publicMousePosition.x,
       pixelY: this._publicMousePosition.y,
-      color: color,
+      pixelColor: color,
     }    
   }
 

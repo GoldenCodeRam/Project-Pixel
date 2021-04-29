@@ -21,13 +21,11 @@
   });
 
   function createPixelInfo() {
-    console.log(canvasWrapper.savePixel(hexToRGB(color)));
-    // console.log(network.sendPixel(canvasWrapper.savePixel(hexToRGB(color))));
     if (canvasWrapper) {
+      console.log(canvasWrapper.savePixel(hexToRGB(color)));
       network.sendPixel(canvasWrapper.savePixel(hexToRGB(color)));
     }
   }
-
   //Función para convertir color HEX a rgba
   function hexToRGB(hex) {
     var c;
@@ -44,48 +42,107 @@
 </script>
 
 <main id="test">
-  <div>
-    <p id="cursorPosition" bind:this={cursorPosition}>0, 0</p>
-
-    <div style="--theme-color: {color}">
-      <p style="color: black">Select a color</p>
-      <p>(showed here)</p>
-    </div>
+  <div class="hero">
+    <p>Select a color</p>
+    <p id="cursorPosition" bind:this={cursorPosition}>x: 0, y: 0</p>
     <input type="color" bind:value={color} style="height: 50px;" />
-    <canvas width="300px" height="300px" bind:this={canvas} />
-    <button on:click={createPixelInfo}>Save image</button>
+    <div class="components">
+      <div class="left-side" style="--theme-color: {color}">
+        <canvas width="300px" height="300px" bind:this={canvas} />
+      </div>
+      <div class="right-side">
+        <div class="title">
+          <h1>LOGS</h1>
+        </div>
+        <div class="logs">
+          
+        </div>
+      </div>
+    </div>
+    <button class="button buttonHover" on:click={createPixelInfo}
+      >Send request to modify</button
+    >
   </div>
 </main>
 
-<style lang="scss">
+<style lang="css">
   div {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+  }
+  canvas {
+    box-shadow: 0 0 10px 0 #00000015;
+    left: 50%;
+    top: 50%;
+    width: 30em;
+    height: 30em;
+    cursor: crosshair;
+    touch-action: none;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    border: 1px solid #000;
+  }
 
-    canvas {
-      box-shadow: 0 0 10px 0 #00000015;
-      left: 50%;
-      top: 50%;
-      width: 30em;
-      height: 30em;
-      cursor: crosshair;
-      touch-action: none;
-      image-rendering: crisp-edges;
-      image-rendering: pixelated;
-    }
+  p {
+    width: 30em;
+    margin: 0 0 0.25em 0;
+    text-align: left;
+    font-family: "Roboto Mono";
+    color: var(--theme-color);
+    text-align: center;
+  }
 
-    p {
-      width: 30em;
-      margin: 0 0 0.25em 0;
-      text-align: left;
-      font-family: "Roboto Mono";
-      color: var(--theme-color);
-    }
+  .components {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100vh;
+  }
 
-    button {
-      margin: 1em;
-    }
+  button {
+    margin: 1em;
+  }
+
+  .button {
+    background-color: #4caf50; /* Green */
+    border: none;
+    color: white;
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 30px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+  }
+
+  .buttonHover {
+    background-color: white;
+    color: black;
+    border: 2px solid #4caf50;
+  }
+
+  .buttonHover:hover {
+    background-color: #4caf50;
+    color: white;
+  }
+  .right-side {
+    width: 30em;
+    height: 30em;
+    border: 1px solid #000;
+    overflow-y: scroll;
+    background-color: rgb(255, 255, 255);
+  }
+
+  .title {
+    margin-top: -400px;
+    color: rgb(11, 17, 200);
+  }
+
+  .logs {
+    margin-top: -400px;
+    color: rgb(11, 17, 200);
   }
 </style>

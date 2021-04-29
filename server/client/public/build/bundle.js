@@ -373,7 +373,7 @@ var app = (function () {
     class Canvas {
         constructor(canvas, cursorPosition, color) {
             this._mousePosition = { x: 0, y: 0 };
-            this._pixelObj = { pixelX: 0, pixelY: 0, color: '' };
+            this._pixelObj = { pixelX: 0, pixelY: 0, pixelColor: '' };
             this._canvas = canvas;
             this._mousePositionText = cursorPosition;
             this._context = canvas.getContext("2d");
@@ -395,7 +395,7 @@ var app = (function () {
             return this._pixelObj = {
                 pixelX: this._publicMousePosition.x,
                 pixelY: this._publicMousePosition.y,
-                color: color,
+                pixelColor: color,
             };
         }
         loadImage() {
@@ -440,8 +440,6 @@ var app = (function () {
         sendPixel(pixelObj) {
             const request = new XMLHttpRequest();
             request.open('post', `${SERVER_URL}/sendNewPixel`);
-            console.log(pixelObj, 'net');
-            console.log(JSON.stringify(pixelObj));
             request.setRequestHeader("Content-type", "application/json");
             request.send(JSON.stringify(pixelObj));
         }
@@ -454,18 +452,23 @@ var app = (function () {
 
     function create_fragment$1(ctx) {
     	let main;
-    	let div1;
+    	let div5;
     	let p0;
     	let t1;
-    	let div0;
     	let p1;
     	let t3;
-    	let p2;
-    	let t5;
     	let input;
-    	let t6;
+    	let t4;
+    	let div4;
+    	let div0;
     	let canvas_1;
+    	let t5;
+    	let div3;
+    	let div1;
+    	let h1;
     	let t7;
+    	let div2;
+    	let t8;
     	let button;
     	let mounted;
     	let dispose;
@@ -473,69 +476,85 @@ var app = (function () {
     	const block = {
     		c: function create() {
     			main = element("main");
-    			div1 = element("div");
+    			div5 = element("div");
     			p0 = element("p");
-    			p0.textContent = "0, 0";
+    			p0.textContent = "Select a color";
     			t1 = space();
-    			div0 = element("div");
     			p1 = element("p");
-    			p1.textContent = "Select a color";
+    			p1.textContent = "x: 0, y: 0";
     			t3 = space();
-    			p2 = element("p");
-    			p2.textContent = "(showed here)";
-    			t5 = space();
     			input = element("input");
-    			t6 = space();
+    			t4 = space();
+    			div4 = element("div");
+    			div0 = element("div");
     			canvas_1 = element("canvas");
+    			t5 = space();
+    			div3 = element("div");
+    			div1 = element("div");
+    			h1 = element("h1");
+    			h1.textContent = "LOGS";
     			t7 = space();
+    			div2 = element("div");
+    			t8 = space();
     			button = element("button");
-    			button.textContent = "Save image";
-    			attr_dev(p0, "id", "cursorPosition");
-    			attr_dev(p0, "class", "svelte-tc62y");
-    			add_location(p0, file$1, 40, 4, 1254);
-    			set_style(p1, "color", "black");
-    			attr_dev(p1, "class", "svelte-tc62y");
-    			add_location(p1, file$1, 43, 6, 1364);
-    			attr_dev(p2, "class", "svelte-tc62y");
-    			add_location(p2, file$1, 44, 6, 1414);
-    			set_style(div0, "--theme-color", /*color*/ ctx[2]);
-    			attr_dev(div0, "class", "svelte-tc62y");
-    			add_location(div0, file$1, 42, 4, 1320);
+    			button.textContent = "Send request to modify";
+    			attr_dev(p0, "class", "svelte-1hob5o1");
+    			add_location(p0, file$1, 39, 4, 1189);
+    			attr_dev(p1, "id", "cursorPosition");
+    			attr_dev(p1, "class", "svelte-1hob5o1");
+    			add_location(p1, file$1, 40, 4, 1216);
     			attr_dev(input, "type", "color");
     			set_style(input, "height", "50px");
-    			add_location(input, file$1, 46, 4, 1452);
+    			add_location(input, file$1, 41, 4, 1286);
     			attr_dev(canvas_1, "width", "300px");
     			attr_dev(canvas_1, "height", "300px");
-    			attr_dev(canvas_1, "class", "svelte-tc62y");
-    			add_location(canvas_1, file$1, 47, 4, 1521);
-    			attr_dev(button, "class", "svelte-tc62y");
-    			add_location(button, file$1, 48, 4, 1585);
-    			attr_dev(div1, "class", "svelte-tc62y");
-    			add_location(div1, file$1, 39, 2, 1243);
+    			attr_dev(canvas_1, "class", "svelte-1hob5o1");
+    			add_location(canvas_1, file$1, 44, 8, 1451);
+    			attr_dev(div0, "class", "left-side svelte-1hob5o1");
+    			set_style(div0, "--theme-color", /*color*/ ctx[2]);
+    			add_location(div0, file$1, 43, 6, 1387);
+    			add_location(h1, file$1, 48, 10, 1596);
+    			attr_dev(div1, "class", "title svelte-1hob5o1");
+    			add_location(div1, file$1, 47, 8, 1565);
+    			attr_dev(div2, "class", "logs svelte-1hob5o1");
+    			add_location(div2, file$1, 50, 8, 1635);
+    			attr_dev(div3, "class", "right-side svelte-1hob5o1");
+    			add_location(div3, file$1, 46, 6, 1531);
+    			attr_dev(div4, "class", "components svelte-1hob5o1");
+    			add_location(div4, file$1, 42, 4, 1355);
+    			attr_dev(button, "class", "button buttonHover svelte-1hob5o1");
+    			add_location(button, file$1, 55, 4, 1713);
+    			attr_dev(div5, "class", "hero svelte-1hob5o1");
+    			add_location(div5, file$1, 38, 2, 1165);
     			attr_dev(main, "id", "test");
-    			add_location(main, file$1, 38, 0, 1223);
+    			add_location(main, file$1, 37, 0, 1145);
     		},
     		l: function claim(nodes) {
     			throw new Error_1("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, main, anchor);
-    			append_dev(main, div1);
-    			append_dev(div1, p0);
-    			/*p0_binding*/ ctx[4](p0);
-    			append_dev(div1, t1);
-    			append_dev(div1, div0);
-    			append_dev(div0, p1);
-    			append_dev(div0, t3);
-    			append_dev(div0, p2);
-    			append_dev(div1, t5);
-    			append_dev(div1, input);
+    			append_dev(main, div5);
+    			append_dev(div5, p0);
+    			append_dev(div5, t1);
+    			append_dev(div5, p1);
+    			/*p1_binding*/ ctx[4](p1);
+    			append_dev(div5, t3);
+    			append_dev(div5, input);
     			set_input_value(input, /*color*/ ctx[2]);
-    			append_dev(div1, t6);
-    			append_dev(div1, canvas_1);
+    			append_dev(div5, t4);
+    			append_dev(div5, div4);
+    			append_dev(div4, div0);
+    			append_dev(div0, canvas_1);
     			/*canvas_1_binding*/ ctx[6](canvas_1);
-    			append_dev(div1, t7);
-    			append_dev(div1, button);
+    			append_dev(div4, t5);
+    			append_dev(div4, div3);
+    			append_dev(div3, div1);
+    			append_dev(div1, h1);
+    			append_dev(div3, t7);
+    			append_dev(div3, div2);
+    			append_dev(div5, t8);
+    			append_dev(div5, button);
 
     			if (!mounted) {
     				dispose = [
@@ -548,18 +567,18 @@ var app = (function () {
     		},
     		p: function update(ctx, [dirty]) {
     			if (dirty & /*color*/ 4) {
-    				set_style(div0, "--theme-color", /*color*/ ctx[2]);
+    				set_input_value(input, /*color*/ ctx[2]);
     			}
 
     			if (dirty & /*color*/ 4) {
-    				set_input_value(input, /*color*/ ctx[2]);
+    				set_style(div0, "--theme-color", /*color*/ ctx[2]);
     			}
     		},
     		i: noop,
     		o: noop,
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(main);
-    			/*p0_binding*/ ctx[4](null);
+    			/*p1_binding*/ ctx[4](null);
     			/*canvas_1_binding*/ ctx[6](null);
     			mounted = false;
     			run_all(dispose);
@@ -613,10 +632,8 @@ var app = (function () {
     	});
 
     	function createPixelInfo() {
-    		console.log(canvasWrapper.savePixel(hexToRGB(color)));
-
-    		// console.log(network.sendPixel(canvasWrapper.savePixel(hexToRGB(color))));
     		if (canvasWrapper) {
+    			console.log(canvasWrapper.savePixel(hexToRGB(color)));
     			network.sendPixel(canvasWrapper.savePixel(hexToRGB(color)));
     		}
     	}
@@ -627,7 +644,7 @@ var app = (function () {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1.warn(`<Canvas> was created with unknown prop '${key}'`);
     	});
 
-    	function p0_binding($$value) {
+    	function p1_binding($$value) {
     		binding_callbacks[$$value ? "unshift" : "push"](() => {
     			cursorPosition = $$value;
     			$$invalidate(1, cursorPosition);
@@ -676,7 +693,7 @@ var app = (function () {
     		cursorPosition,
     		color,
     		createPixelInfo,
-    		p0_binding,
+    		p1_binding,
     		input_input_handler,
     		canvas_1_binding
     	];
