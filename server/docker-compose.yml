@@ -1,6 +1,9 @@
 version: "3.9"
 services:
   server:
+    environment: 
+      - GATEWAY
+      - PORT
     build: .
     links:
       - redis
