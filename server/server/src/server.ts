@@ -1,15 +1,26 @@
 import fs from 'fs'
 import axios from 'axios'
-import { getStoredPixels } from './database'
+import { getStoredPixels, getSignatureFromKey } from './database'
 
 import { LEADER_PORT, SERVER_GATEWAY } from './utils/constants'
 import { serverLogger as logger } from './utils/logger'
 
 export {
-  sendNewPixelRequest
+  sendNewPixelRequest,
+  getStoredPixelsFromRedis
 }
 
-async function sendNewPixelRequest (requestBody: any) {
+async function getStoredPixelsFromRedis() {
+  const storedSignatures = await getStoredPixels()
+  const pixels = []
+  for (const storedSignature of storedSignatures) {
+    const pixel = await getSignatureFromKey(storedSignature.signature)
+    pixels.push(pixel)
+  }    
+  return pixels
+}
+
+async function sendNewPixelRequest(requestBody: any) {
   const storedPixels = await getStoredPixels()
   const signatureList = []
   for (const storedPixel of storedPixels) {
@@ -32,7 +43,7 @@ async function sendNewPixelRequest (requestBody: any) {
   }
 }
 
-async function makeProofOfWork (word: string) {
+async function makeProofOfWork(word: string) {
   logger.info('Making the proof of work...')
   for (let i = 0; i < 50000; i++) {
     await fs.promises.appendFile('./pow.txt', `${word}\n`)

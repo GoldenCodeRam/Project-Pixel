@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addPixelToRegistry = exports.getStoredPixels = void 0;
+exports.addPixelToRegistry = exports.getSignatureFromKey = exports.getStoredPixels = void 0;
 var util_1 = require("util");
 var redis_1 = __importDefault(require("redis"));
 var logger_1 = require("./utils/logger");
@@ -130,3 +130,7 @@ function getSignatureFromKey(key) {
         });
     });
 }
+<<<<<<< HEAD
+=======
+exports.getSignatureFromKey = getSignatureFromKey;
+>>>>>>> d702c856618bdb94780939836c49240ebad408fb

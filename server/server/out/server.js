@@ -39,12 +39,42 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendNewPixelRequest = void 0;
+exports.getStoredPixelsFromRedis = exports.sendNewPixelRequest = void 0;
 var fs_1 = __importDefault(require("fs"));
 var axios_1 = __importDefault(require("axios"));
 var database_1 = require("./database");
 var constants_1 = require("./utils/constants");
 var logger_1 = require("./utils/logger");
+function getStoredPixelsFromRedis() {
+    return __awaiter(this, void 0, void 0, function () {
+        var storedSignatures, pixels, _i, storedSignatures_1, storedSignature, pixel;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, database_1.getStoredPixels()
+                    // const signatureList = []
+                ];
+                case 1:
+                    storedSignatures = _a.sent();
+                    pixels = [];
+                    _i = 0, storedSignatures_1 = storedSignatures;
+                    _a.label = 2;
+                case 2:
+                    if (!(_i < storedSignatures_1.length)) return [3 /*break*/, 5];
+                    storedSignature = storedSignatures_1[_i];
+                    return [4 /*yield*/, database_1.getSignatureFromKey(storedSignature.signature)];
+                case 3:
+                    pixel = _a.sent();
+                    pixels.push(pixel);
+                    _a.label = 4;
+                case 4:
+                    _i++;
+                    return [3 /*break*/, 2];
+                case 5: return [2 /*return*/, pixels];
+            }
+        });
+    });
+}
+exports.getStoredPixelsFromRedis = getStoredPixelsFromRedis;
 function sendNewPixelRequest(requestBody) {
     return __awaiter(this, void 0, void 0, function () {
         var storedPixels, signatureList, _i, storedPixels_1, storedPixel, response;

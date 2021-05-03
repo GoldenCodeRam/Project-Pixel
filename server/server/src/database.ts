@@ -64,5 +64,6 @@ async function getSignatureFromKey (key: string): Promise<StoredPixel | undefine
 
 export {
   getStoredPixels,
+  getSignatureFromKey,
   addPixelToRegistry
 }

@@ -10,7 +10,7 @@ export default class Canvas {
 
   public _publicMousePosition;
   public _pixelColor;
-  public _pixelObj = { pixelX: 0, pixelY: 0, color: '' };
+  public _pixelObj = { pixelX: 0, pixelY: 0, pixelColor: '' };
 
   constructor(canvas: HTMLCanvasElement, cursorPosition: HTMLParagraphElement, color) {
     this._canvas = canvas;
@@ -41,8 +41,8 @@ export default class Canvas {
     return this._pixelObj = {
       pixelX: this._publicMousePosition.x,
       pixelY: this._publicMousePosition.y,
-      color: color,
-    }    
+      pixelColor: color,
+    }
   }
 
   private loadImage() {
@@ -64,6 +64,7 @@ export default class Canvas {
   }
 
   private draw(x: number, y: number, color) {
+
     this.setColor(color);
     if (x >= 0 && x < this._canvas.width && y >= 0 && y < this._canvas.height) {
       this._context.fillRect(
@@ -77,8 +78,8 @@ export default class Canvas {
   }
 
   private setColor(color) {
-    // this._context.fillStyle = `rgba("${color[0]},${color[1]},${color[2]},${color[3]}")`;
-    this._context.fillStyle = color;
+    // this._context.fillStyle = color    
+    this._context.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${color[3]})`;
   }
 
   private mouseMovedInCanvas(event: MouseEvent) {

@@ -127,6 +127,22 @@ app.post('/finishedProofOfWork', function (request, response) { return __awaiter
     });
 }); });
 // ================================= Non leader methods ==========================================
+app.get('/getStoredPixels', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var values;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                logger_1.logger.info('Getting stored pixels from redis 🎦');
+                return [4 /*yield*/, server_1.getStoredPixelsFromRedis()];
+            case 1:
+                values = _a.sent();
+                logger_1.logger.info('Los valores conseguidos fueron ');
+                //console.log(values)
+                res.send({ values: values });
+                return [2 /*return*/];
+        }
+    });
+}); });
 app.get('/randomNumber', function (request, response) {
     logger_1.logger.info('Request to get a random number from this server');
     response.send({

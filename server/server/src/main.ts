@@ -1,12 +1,12 @@
 import fs from 'fs'
 import cors from 'cors'
-import express from 'express'
+import express, { response } from 'express'
 import fileUpload from 'express-fileupload'
 
 import { logger } from './utils/logger'
 import { WORDS, LOCAL_SERVER_PORT } from './utils/constants'
 import { checkSignatureList, compareSignatureList, getWordForProofOfWork, addToQueue, checkIdInQueue, sendPowToServers, validateProofOfWork, sendNewPixelToAllInstances } from './blockchain'
-import { sendNewPixelRequest } from './server'
+import { sendNewPixelRequest, getStoredPixelsFromRedis } from './server'
 import { addPixelToRegistry } from './database'
 
 const app = express()
@@ -50,6 +50,8 @@ app.post('/newPixel', async (request, response) => {
   }
 })
 
+
+
 app.post('/finishedProofOfWork', async (request, response) => {
   logger.info('Request on the leader to evaluate a proof of work')
   const workInformation = checkIdInQueue(request.body.serverId)
@@ -72,6 +74,15 @@ app.post('/finishedProofOfWork', async (request, response) => {
 })
 
 // ================================= Non leader methods ==========================================
+
+app.get('/getStoredPixels', async (req, res) => {
+  logger.info('Getting stored pixels from redis 🎦')
+  const values = await getStoredPixelsFromRedis()
+  logger.info('Los valores conseguidos fueron ')
+  //console.log(values)
+  res.send({ values: values });
+})
+
 
 app.get('/randomNumber', (request, response) => {
   logger.info('Request to get a random number from this server')
