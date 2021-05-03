@@ -4,6 +4,8 @@ services:
     environment: 
       - GATEWAY
       - PORT
+      - LOGGING_SERVER
+      - LOGGING_SERVER_PORT
     build: .
     links:
       - redis

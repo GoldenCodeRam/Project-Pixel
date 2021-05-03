@@ -22,6 +22,7 @@ console.clear()
 
 app.get('/status', (_, response) => {
   logger.info('Request to send the status of the server; OK')
+  logger.http('alskjdhfasjdkf')
   response.sendStatus(200)
 })
 
