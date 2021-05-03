@@ -80,6 +80,9 @@ var app = (function () {
             throw new Error('Function called outside component initialization');
         return current_component;
     }
+    function beforeUpdate(fn) {
+        get_current_component().$$.before_update.push(fn);
+    }
     function onMount(fn) {
         get_current_component().$$.on_mount.push(fn);
     }
@@ -430,7 +433,7 @@ var app = (function () {
         }
     }
 
-    const SERVER_URL = 'http://localhost:8084';
+    const SERVER_URL = 'http://localhost:8081';
     class Network {
         serverStatus() {
             const request = new XMLHttpRequest();
@@ -442,20 +445,6 @@ var app = (function () {
             request.open('post', `${SERVER_URL}/sendNewPixel`);
             request.setRequestHeader("Content-type", "application/json");
             request.send(JSON.stringify(pixelObj));
-        }
-        getPixels() {
-            const request = new XMLHttpRequest();
-            request.open('get', `${SERVER_URL}/getStoredPixels`);
-            request.responseType = "json";
-            request.onload = function () {
-                if (request.readyState === request.DONE) {
-                    if (request.status === 200) {
-                        console.log('Firmas');
-                        console.log(request.response.values);
-                    }
-                }
-            };
-            request.send();
         }
     }
 
@@ -504,31 +493,31 @@ var app = (function () {
     			t7 = space();
     			button1 = element("button");
     			button1.textContent = "Actualizar obra";
-    			attr_dev(p0, "class", "svelte-1hob5o1");
-    			add_location(p0, file$1, 54, 4, 1589);
+    			attr_dev(p0, "class", "svelte-11dun7s");
+    			add_location(p0, file$1, 72, 4, 2821);
     			attr_dev(p1, "id", "cursorPosition");
-    			attr_dev(p1, "class", "svelte-1hob5o1");
-    			add_location(p1, file$1, 55, 4, 1616);
+    			attr_dev(p1, "class", "svelte-11dun7s");
+    			add_location(p1, file$1, 73, 4, 2848);
     			attr_dev(input, "type", "color");
     			set_style(input, "height", "50px");
-    			add_location(input, file$1, 56, 4, 1686);
+    			add_location(input, file$1, 74, 4, 2918);
     			attr_dev(canvas_1, "width", "300px");
     			attr_dev(canvas_1, "height", "300px");
-    			attr_dev(canvas_1, "class", "svelte-1hob5o1");
-    			add_location(canvas_1, file$1, 59, 8, 1814);
+    			attr_dev(canvas_1, "class", "svelte-11dun7s");
+    			add_location(canvas_1, file$1, 77, 8, 3046);
     			set_style(div0, "--theme-color", /*color*/ ctx[2]);
-    			attr_dev(div0, "class", "svelte-1hob5o1");
-    			add_location(div0, file$1, 58, 6, 1768);
-    			attr_dev(div1, "class", "svelte-1hob5o1");
-    			add_location(div1, file$1, 57, 4, 1755);
-    			attr_dev(button0, "class", "button buttonHover svelte-1hob5o1");
-    			add_location(button0, file$1, 62, 4, 1904);
-    			attr_dev(button1, "class", "button buttonHover svelte-1hob5o1");
-    			add_location(button1, file$1, 65, 4, 2026);
-    			attr_dev(div2, "class", "hero svelte-1hob5o1");
-    			add_location(div2, file$1, 53, 2, 1565);
+    			attr_dev(div0, "class", "svelte-11dun7s");
+    			add_location(div0, file$1, 76, 6, 3000);
+    			attr_dev(div1, "class", "svelte-11dun7s");
+    			add_location(div1, file$1, 75, 4, 2987);
+    			attr_dev(button0, "class", "button buttonHover svelte-11dun7s");
+    			add_location(button0, file$1, 80, 4, 3136);
+    			attr_dev(button1, "class", "button buttonHover svelte-11dun7s");
+    			add_location(button1, file$1, 83, 4, 3258);
+    			attr_dev(div2, "class", "hero svelte-11dun7s");
+    			add_location(div2, file$1, 71, 2, 2797);
     			attr_dev(main, "id", "test");
-    			add_location(main, file$1, 52, 0, 1545);
+    			add_location(main, file$1, 70, 0, 2777);
     		},
     		l: function claim(nodes) {
     			throw new Error_1("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -539,7 +528,7 @@ var app = (function () {
     			append_dev(div2, p0);
     			append_dev(div2, t1);
     			append_dev(div2, p1);
-    			/*p1_binding*/ ctx[5](p1);
+    			/*p1_binding*/ ctx[4](p1);
     			append_dev(div2, t3);
     			append_dev(div2, input);
     			set_input_value(input, /*color*/ ctx[2]);
@@ -547,7 +536,7 @@ var app = (function () {
     			append_dev(div2, div1);
     			append_dev(div1, div0);
     			append_dev(div0, canvas_1);
-    			/*canvas_1_binding*/ ctx[7](canvas_1);
+    			/*canvas_1_binding*/ ctx[6](canvas_1);
     			append_dev(div2, t5);
     			append_dev(div2, button0);
     			append_dev(div2, t7);
@@ -555,9 +544,9 @@ var app = (function () {
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(input, "input", /*input_input_handler*/ ctx[6]),
+    					listen_dev(input, "input", /*input_input_handler*/ ctx[5]),
     					listen_dev(button0, "click", /*createPixelInfo*/ ctx[3], false, false, false),
-    					listen_dev(button1, "click", /*updatePixelArt*/ ctx[4], false, false, false)
+    					listen_dev(button1, "click", updatePixelArt, false, false, false)
     				];
 
     				mounted = true;
@@ -576,8 +565,8 @@ var app = (function () {
     		o: noop,
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(main);
-    			/*p1_binding*/ ctx[5](null);
-    			/*canvas_1_binding*/ ctx[7](null);
+    			/*p1_binding*/ ctx[4](null);
+    			/*canvas_1_binding*/ ctx[6](null);
     			mounted = false;
     			run_all(dispose);
     		}
@@ -594,6 +583,11 @@ var app = (function () {
     	return block;
     }
 
+    function updatePixelArt() {
+    	
+    }
+
+    //Función para convertir color HEX a rgba
     function hexToRGB(hex) {
     	let rgba = [];
     	var c;
@@ -621,16 +615,70 @@ var app = (function () {
     function instance$1($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Canvas", slots, []);
+
+    	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+    		function adopt(value) {
+    			return value instanceof P
+    			? value
+    			: new P(function (resolve) {
+    						resolve(value);
+    					});
+    		}
+
+    		return new (P || (P = Promise))(function (resolve, reject) {
+    				function fulfilled(value) {
+    					try {
+    						step(generator.next(value));
+    					} catch(e) {
+    						reject(e);
+    					}
+    				}
+
+    				function rejected(value) {
+    					try {
+    						step(generator["throw"](value));
+    					} catch(e) {
+    						reject(e);
+    					}
+    				}
+
+    				function step(result) {
+    					result.done
+    					? resolve(result.value)
+    					: adopt(result.value).then(fulfilled, rejected);
+    				}
+
+    				step((generator = generator.apply(thisArg, _arguments || [])).next());
+    			});
+    	};
+
     	let canvas;
     	let cursorPosition;
     	let canvasWrapper;
     	let color = "#5c3838";
     	let colorArray = [];
+    	let pixels = [];
     	const network = new Network();
 
-    	onMount(() => {
+    	// onMount(() => {
+    	//   network.getPixels();
+    	//   canvasWrapper = new Canvas(canvas, cursorPosition, colorArray);
+    	// });
+    	onMount(() => __awaiter(void 0, void 0, void 0, function* () {
     		canvasWrapper = new Canvas(canvas, cursorPosition, colorArray);
-    	});
+    		const res = yield fetch(`${SERVER_URL}/getStoredPixels`);
+    		pixels = yield res.json();
+    		console.log(pixels.values);
+
+    		for (let i = 0; i < pixels.values.length; i++) {
+    			canvasWrapper.draw(pixels.values[i].pixelX, pixels.values[i].pixelY, [
+    				pixels.values[i].r,
+    				pixels.values[i].g,
+    				pixels.values[i].b,
+    				pixels.values[i].a
+    			]);
+    		}
+    	}));
 
     	//After every update, the color is set by the color from the input
     	afterUpdate(() => {
@@ -644,12 +692,6 @@ var app = (function () {
     			console.log(hexToRGB(color));
     			console.log(color);
     			network.sendPixel(canvasWrapper.savePixel(hexToRGB(color)));
-    		}
-    	}
-
-    	function updatePixelArt() {
-    		if (canvasWrapper) {
-    			network.getPixels();
     		}
     	}
 
@@ -679,15 +721,19 @@ var app = (function () {
     	}
 
     	$$self.$capture_state = () => ({
+    		__awaiter,
+    		beforeUpdate,
     		onMount,
     		afterUpdate,
     		Canvas,
     		Network,
+    		SERVER_URL,
     		canvas,
     		cursorPosition,
     		canvasWrapper,
     		color,
     		colorArray,
+    		pixels,
     		network,
     		createPixelInfo,
     		updatePixelArt,
@@ -695,11 +741,13 @@ var app = (function () {
     	});
 
     	$$self.$inject_state = $$props => {
+    		if ("__awaiter" in $$props) __awaiter = $$props.__awaiter;
     		if ("canvas" in $$props) $$invalidate(0, canvas = $$props.canvas);
     		if ("cursorPosition" in $$props) $$invalidate(1, cursorPosition = $$props.cursorPosition);
     		if ("canvasWrapper" in $$props) canvasWrapper = $$props.canvasWrapper;
     		if ("color" in $$props) $$invalidate(2, color = $$props.color);
     		if ("colorArray" in $$props) colorArray = $$props.colorArray;
+    		if ("pixels" in $$props) pixels = $$props.pixels;
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -711,7 +759,6 @@ var app = (function () {
     		cursorPosition,
     		color,
     		createPixelInfo,
-    		updatePixelArt,
     		p1_binding,
     		input_input_handler,
     		canvas_1_binding

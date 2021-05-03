@@ -1,19 +1,33 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { beforeUpdate, onMount } from "svelte";
   import { afterUpdate } from "svelte";
   import Canvas from "../scripts/canvas";
   import Network from "../scripts/network";
+  import { SERVER_URL } from "../scripts/network";
 
   let canvas: HTMLCanvasElement;
   let cursorPosition: HTMLParagraphElement;
-  let canvasWrapper: Canvas | undefined;
+  let canvasWrapper: Canvas;
   let color = "#5c3838";
   let colorArray = [];
+  let pixels = [];
 
   const network = new Network();
 
-  onMount(() => {
+  // onMount(() => {
+  //   network.getPixels();
+  //   canvasWrapper = new Canvas(canvas, cursorPosition, colorArray);
+
+  // });
+
+  onMount(async () => {
     canvasWrapper = new Canvas(canvas, cursorPosition, colorArray);
+    const res = await fetch(`${SERVER_URL}/getStoredPixels`);
+    pixels = await res.json();
+    console.log(pixels.values)     
+    for (let i = 0; i < pixels.values.length; i++) {
+      canvasWrapper.draw(pixels.values[i].pixelX, pixels.values[i].pixelY, [pixels.values[i].r, pixels.values[i].g, pixels.values[i].b, pixels.values[i].a])         
+    }
   });
 
   //After every update, the color is set by the color from the input
@@ -32,9 +46,7 @@
   }
 
   function updatePixelArt() {
-    if (canvasWrapper) {
-      network.getPixels();
-    }
+    
   }
   //Función para convertir color HEX a rgba
   function hexToRGB(hex) {
@@ -105,12 +117,6 @@
     text-align: center;
   }
 
-  .components {
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100vh;
-  }
-
   button {
     margin: 1em;
   }
@@ -138,22 +144,5 @@
   .buttonHover:hover {
     background-color: #4caf50;
     color: white;
-  }
-  .right-side {
-    width: 30em;
-    height: 30em;
-    border: 1px solid #000;
-    overflow-y: scroll;
-    background-color: rgb(255, 255, 255);
-  }
-
-  .title {
-    margin-top: -400px;
-    color: rgb(11, 17, 200);
-  }
-
-  .logs {
-    margin-top: -400px;
-    color: rgb(11, 17, 200);
   }
 </style>
