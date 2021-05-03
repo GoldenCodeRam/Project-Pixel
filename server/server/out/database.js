@@ -130,4 +130,7 @@ function getSignatureFromKey(key) {
         });
     });
 }
+<<<<<<< HEAD
+=======
 exports.getSignatureFromKey = getSignatureFromKey;
+>>>>>>> d702c856618bdb94780939836c49240ebad408fb

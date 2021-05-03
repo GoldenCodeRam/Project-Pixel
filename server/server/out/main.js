@@ -58,6 +58,7 @@ app.use(cors_1.default());
 console.clear();
 app.get('/status', function (_, response) {
     logger_1.logger.info('Request to send the status of the server; OK');
+    logger_1.logger.http('alskjdhfasjdkf');
     response.sendStatus(200);
 });
 // New petition to change the pixel to the leader, this method should only be used for and by the
