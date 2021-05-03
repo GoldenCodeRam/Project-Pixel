@@ -5,8 +5,9 @@ cd ..
 
 # Make the .env temporal file containing the environment variables for the docker-compose
 echo PORT=$1 > $1.env
+echo GATEWAY=172.18.0.1 >> $1.env
 
-docker-compose --project-name $1 --env-file ./$1.env up --detach --force-recreate
+docker-compose --project-name $1 --env-file ./$1.env up --build --detach --force-recreate
 
 # Remove the .env temporal file
 rm $1.env

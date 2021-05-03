@@ -39,97 +39,188 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var fs_1 = __importDefault(require("fs"));
 var cors_1 = __importDefault(require("cors"));
-var axios_1 = __importDefault(require("axios"));
 var express_1 = __importDefault(require("express"));
-var Logger_1 = require("./utils/Logger");
+var express_fileupload_1 = __importDefault(require("express-fileupload"));
+var logger_1 = require("./utils/logger");
+var constants_1 = require("./utils/constants");
+var blockchain_1 = require("./blockchain");
+var server_1 = require("./server");
+var database_1 = require("./database");
 var app = express_1.default();
-var port = 8080;
-var fileUpload = require('express-fileupload');
-app.use(fileUpload());
-// parse application/x-www-form-urlencoded
-app.use(express_1.default.urlencoded({ extended: false }));
-app.use(express_1.default.json());
-var words = ['Mandarina', 'Banano', 'Pera', 'Manzana', 'Limon'];
-var servers = [8081, 8082, 8083];
-console.clear();
+app.use(express_1.default.json({
+    limit: '50mb'
+}));
+app.use(express_fileupload_1.default());
 app.use(express_1.default.static('public'));
 app.use(cors_1.default());
-app.post('/sendNewPixel', function (request, response) {
-    Logger_1.logger.info('Post request to upload the pixelart image');
-    Logger_1.logger.info('Recibida info del pixel 👨‍🎨');
-    console.log(request.body);
-});
+console.clear();
 app.get('/status', function (_, response) {
-    Logger_1.logger.info('Request to send the status of the server; OK');
+    logger_1.logger.info('Request to send the status of the server; OK');
     response.sendStatus(200);
 });
-// Peticion que verifica si un archivo de firmas coincide con el del servido actual y retorna Ok o Todo mal
-app.post('verifySignature', function (req, res) {
-    // const signature = req.body.signature
-    // Verificar que coincidan las firmas de la imagen
-    res.json({ message: true });
+// New petition to change the pixel to the leader, this method should only be used for and by the
+// leader server.
+app.post('/newPixel', function (request, response) { return __awaiter(void 0, void 0, void 0, function () {
+    var signatureList, isValid, word;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                logger_1.logger.info('Request on the leader to register a new pixel on the network 🎉');
+                signatureList = request.body.signatureList;
+                return [4 /*yield*/, blockchain_1.checkSignatureList(signatureList)];
+            case 1:
+                isValid = _a.sent();
+                if (!isValid) return [3 /*break*/, 3];
+                return [4 /*yield*/, blockchain_1.getWordForProofOfWork()];
+            case 2:
+                word = _a.sent();
+                response.send(word);
+                // Send the word to the request instance and toss the petition to the queue of work
+                blockchain_1.addToQueue({
+                    serverId: request.body.serverId,
+                    pixelColor: request.body.pixelColor,
+                    pixelX: request.body.pixelX,
+                    pixelY: request.body.pixelY,
+                    word: word
+                });
+                return [3 /*break*/, 4];
+            case 3:
+                logger_1.logger.info('The request to register a new pixel on the network has been marked as invalid 😥');
+                response.sendStatus(400);
+                _a.label = 4;
+            case 4: return [2 /*return*/];
+        }
+    });
+}); });
+app.post('/finishedProofOfWork', function (request, response) { return __awaiter(void 0, void 0, void 0, function () {
+    var workInformation, isValid;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                logger_1.logger.info('Request on the leader to evaluate a proof of work');
+                workInformation = blockchain_1.checkIdInQueue(request.body.serverId);
+                if (!workInformation) return [3 /*break*/, 2];
+                logger_1.logger.info('Writting the file to a temporal place');
+                fs_1.default.writeFileSync('./pow.txt', Buffer.from(request.body.pow.data));
+                logger_1.logger.info('Finished');
+                return [4 /*yield*/, blockchain_1.sendPowToServers(request.body.serverId, workInformation.word)];
+            case 1:
+                isValid = _a.sent();
+                if (isValid) {
+                    response.sendStatus(200);
+                    blockchain_1.sendNewPixelToAllInstances(workInformation);
+                }
+                else {
+                    logger_1.logger.warn('The proof of work is not valid 👻');
+                    response.sendStatus(400);
+                }
+                return [3 /*break*/, 3];
+            case 2:
+                logger_1.logger.warn('Server not in the queue of work!');
+                response.sendStatus(400);
+                _a.label = 3;
+            case 3: return [2 /*return*/];
+        }
+    });
+}); });
+// ================================= Non leader methods ==========================================
+app.get('/getStoredPixels', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var values;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                logger_1.logger.info('Getting stored pixels from redis 🎦');
+                return [4 /*yield*/, server_1.getStoredPixelsFromRedis()];
+            case 1:
+                values = _a.sent();
+                logger_1.logger.info('Los valores conseguidos fueron ');
+                //console.log(values)
+                res.send({ values: values });
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.get('/randomNumber', function (request, response) {
+    logger_1.logger.info('Request to get a random number from this server');
+    response.send({
+        number: Math.round(Math.random() * 100)
+    });
 });
+app.post('/sendNewPixel', function (request, response) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        logger_1.logger.info('Request to reigster a new pixel to the leader');
+        server_1.sendNewPixelRequest(request.body);
+        response.sendStatus(200);
+        return [2 /*return*/];
+    });
+}); });
+// Post petition to get the validity of all of the signatures sent from the leader with this server.
+app.post('/verifySignatures', function (request, response) { return __awaiter(void 0, void 0, void 0, function () {
+    var validity;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                logger_1.logger.info('Post request to compare some signatures with the signatures on this instance');
+                console.log(request.body.signatureList);
+                return [4 /*yield*/, blockchain_1.compareSignatureList(request.body.signatureList)];
+            case 1:
+                validity = _a.sent();
+                logger_1.logger.warn("The validity of the signatures were " + validity);
+                response.sendStatus(validity ? 200 : 400);
+                return [2 /*return*/];
+        }
+    });
+}); });
 // Peticion que devuelve una palabra aleatoria del arreglo de palabras predefinidas
-app.get('/word', function (req, res) {
-    var selectedWord = words[Math.floor((Math.random() * (5 - 0)) + 0)];
-    Logger_1.logger.info("La palabra escogida es " + selectedWord);
-    res.send(selectedWord);
-});
-// Peticion inicial a la que accede el cliente para solicitar cambiar un pixel
-app.post('/changePixel', function (req, res) {
-    var img = req.files.file;
-    var info = req.body.info;
-    info = JSON.parse(info);
-    Logger_1.logger.info('Informacion de firmas recibida correctamente');
-    img.mv("" + img.name, function () {
-        Logger_1.logger.info('Imagen recibida correctamente');
-        res.json('Informacion recibida');
+app.get('/word', function (_, response) {
+    logger_1.logger.info('Request to get the selected word');
+    var selectedWord = constants_1.WORDS[Math.floor(Math.random() * constants_1.WORDS.length)];
+    logger_1.logger.info("The selected word is " + selectedWord);
+    response.send({
+        selectedWord: selectedWord
     });
-    sendSignature(info);
 });
-// Funcion que se encarga de enviar la firma a todos los servidores para su verificacion
-function sendSignature(signature) {
-    var cont = 0;
-    servers.forEach(function () {
-        axios_1.default.post("http://localhost:" + servers + "/verifySignature", {
-            data: signature
-        }).then(function (response) {
-            if (response.data.message) {
-                cont = cont + 1;
-            }
-        })
-            .catch(function (error) {
-            console.log(error);
+// Check the file has been written correctly from the instance
+app.post('/checkProofOfWork', function (request, response) { return __awaiter(void 0, void 0, void 0, function () {
+    var validity;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                logger_1.logger.info('Request to check the proof of work of some instance');
+                logger_1.logger.info('Writting the file to a temporal place');
+                fs_1.default.writeFileSync('./pow.txt', Buffer.from(request.body.pow.data));
+                logger_1.logger.info('Finished');
+                return [4 /*yield*/, blockchain_1.validateProofOfWork(request.body.word)];
+            case 1:
+                validity = _a.sent();
+                logger_1.logger.warn("The validity of the proof of work is " + validity);
+                response.sendStatus(validity ? 200 : 400);
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.post('/setPixel', function (request, response) {
+    logger_1.logger.info('Request to set a new pixel! 😲');
+    var workInformation = request.body.workInformation;
+    if (workInformation) {
+        database_1.addPixelToRegistry({
+            signature: request.body.signature,
+            pixelX: workInformation.pixelX,
+            pixelY: workInformation.pixelY,
+            r: workInformation.pixelColor[0],
+            g: workInformation.pixelColor[1],
+            b: workInformation.pixelColor[2],
+            a: workInformation.pixelColor[3]
         });
-    });
-    if (cont >= ((servers.length / 2) + 1)) {
-        // Como las firmas son reales, se procede a solicitar la prueba de trabajo
-        Logger_1.logger.info('La firma de la imagen del cliente es correcta, asignando prueba de trabajo...');
-        pow();
+        response.sendStatus(200);
     }
     else {
-        // Pailas
-        Logger_1.logger.info('La firma de la imagen del cliente no coincide con la mayoria de los servidores');
+        logger_1.logger.error('Something went wrong with the writing of the pixel. 😢');
+        response.sendStatus(400);
     }
-}
-// Funcion que se encarga de pedir a todos una palabra para asignar la prueba de trabajo al cliente que solicite modificar el archivo
-function pow() {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            servers.forEach(function () {
-                axios_1.default.post("http://localhost:" + servers + "/word")
-                    .then(function (response) {
-                    console.log(response);
-                })
-                    .catch(function (error) {
-                    console.log(error);
-                });
-            });
-            return [2 /*return*/];
-        });
-    });
-}
-app.listen(port, function () {
-    Logger_1.logger.info("Instance server listening at port " + port);
+});
+app.listen(constants_1.LOCAL_SERVER_PORT, function () {
+    logger_1.logger.info("Instance server listening at port " + constants_1.LOCAL_SERVER_PORT);
 });
