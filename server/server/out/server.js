@@ -50,9 +50,7 @@ function getStoredPixelsFromRedis() {
         var storedSignatures, pixels, _i, storedSignatures_1, storedSignature, pixel;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, database_1.getStoredPixels()
-                    // const signatureList = []
-                ];
+                case 0: return [4 /*yield*/, database_1.getStoredPixels()];
                 case 1:
                     storedSignatures = _a.sent();
                     pixels = [];

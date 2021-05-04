@@ -4,14 +4,18 @@
   "description": "",
   "main": "./out/main.js",
   "scripts": {
-    "test": "tsc && node ./out/main.js"
+    "start": "node ./out/main.js",
+    "test": "tsc && node ./out/main.js",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.1",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
+    "socket.io": "^4.0.1",
     "typescript": "^4.2.4"
   },
   "devDependencies": {

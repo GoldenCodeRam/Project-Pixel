@@ -1,16 +1,26 @@
 import { createLogger, format, transports } from 'winston'
 const { combine, timestamp, label, printf } = format
 
+const timezone = () => {
+  return new Date().toLocaleDateString(
+    'es-CO',
+    {
+      timeZone: 'America/Bogota',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric'
+    })
+}
+
 const myFormat = printf(({ level, message, label, timestamp }) => {
   return `${level} [${timestamp} : ${label}]\n${message}`
 })
 
 const logger = createLogger({
   format: combine(
-    format.colorize(),
-    label({ label: 'Instance Server 🤖' }),
+    label({ label: `Instance Server 🤖 - Server ${process.env.PORT}` }),
     timestamp({
-      format: 'hh:mm:ss A'
+      format: timezone
     }),
     myFormat
   ),
@@ -26,10 +36,9 @@ const logger = createLogger({
 
 const serverLogger = createLogger({
   format: combine(
-    format.colorize(),
-    label({ label: 'Server 🧰' }),
+    label({ label: `Server 🧰 - Server ${process.env.PORT}` }),
     timestamp({
-      format: 'hh:mm:ss A'
+      format: timezone
     }),
     myFormat
   ),
@@ -45,10 +54,9 @@ const serverLogger = createLogger({
 
 const blockchainLogger = createLogger({
   format: combine(
-    format.colorize(),
-    label({ label: 'Blockchain 🔗' }),
+    label({ label: `Blockchain 🔗 - Server ${process.env.PORT}` }),
     timestamp({
-      format: 'hh:mm:ss A'
+      format: timezone
     }),
     myFormat
   ),
@@ -64,10 +72,9 @@ const blockchainLogger = createLogger({
 
 const databaseLogger = createLogger({
   format: combine(
-    format.colorize(),
-    label({ label: 'Database 🗃️' }),
+    label({ label: `Database 🗃️ - Server ${process.env.PORT}` }),
     timestamp({
-      format: 'hh:mm:ss A'
+      format: timezone
     }),
     myFormat
   ),

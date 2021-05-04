@@ -1,6 +1,6 @@
 import fs from 'fs'
 import cors from 'cors'
-import express, { response } from 'express'
+import express from 'express'
 import fileUpload from 'express-fileupload'
 
 import { logger } from './utils/logger'
@@ -22,7 +22,6 @@ console.clear()
 
 app.get('/status', (_, response) => {
   logger.info('Request to send the status of the server; OK')
-  logger.http('alskjdhfasjdkf')
   response.sendStatus(200)
 })
 
@@ -49,8 +48,6 @@ app.post('/newPixel', async (request, response) => {
     response.sendStatus(400)
   }
 })
-
-
 
 app.post('/finishedProofOfWork', async (request, response) => {
   logger.info('Request on the leader to evaluate a proof of work')
@@ -79,10 +76,8 @@ app.get('/getStoredPixels', async (req, res) => {
   logger.info('Getting stored pixels from redis 🎦')
   const values = await getStoredPixelsFromRedis()
   logger.info('Los valores conseguidos fueron ')
-  //console.log(values)
-  res.send({ values: values });
+  res.send({ values: values })
 })
-
 
 app.get('/randomNumber', (request, response) => {
   logger.info('Request to get a random number from this server')
