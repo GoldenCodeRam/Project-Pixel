@@ -1,5 +1,7 @@
 const BRUSH_SIZE = 10;
 
+
+
 export default class Canvas {
   private _canvas: HTMLCanvasElement;
   private _mousePositionText: HTMLParagraphElement;
@@ -63,7 +65,7 @@ export default class Canvas {
     };
   }
 
-  private draw(x: number, y: number, color) {
+  public draw(x: number, y: number, color) {
 
     this.setColor(color);
     if (x >= 0 && x < this._canvas.width && y >= 0 && y < this._canvas.height) {
@@ -92,4 +94,6 @@ export default class Canvas {
     const yPosition = Math.floor(y / BRUSH_SIZE);
     this._mousePosition = { x: xPosition, y: yPosition };
   }
+  
 }
+
